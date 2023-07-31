@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KUSYS-Demo", "KUSYS-Demo\KUSYS-Demo.csproj", "{18B5EE3A-E9B8-425F-A2D4-1DCBD3933B59}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KUSYS-Demo.Tests", "KUSYS-Demo.Tests\KUSYS-Demo.Tests.csproj", "{BEE7C2B5-7FB5-44C2-96A3-7413ADCC7783}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{18B5EE3A-E9B8-425F-A2D4-1DCBD3933B59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18B5EE3A-E9B8-425F-A2D4-1DCBD3933B59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18B5EE3A-E9B8-425F-A2D4-1DCBD3933B59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18B5EE3A-E9B8-425F-A2D4-1DCBD3933B59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEE7C2B5-7FB5-44C2-96A3-7413ADCC7783}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEE7C2B5-7FB5-44C2-96A3-7413ADCC7783}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEE7C2B5-7FB5-44C2-96A3-7413ADCC7783}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEE7C2B5-7FB5-44C2-96A3-7413ADCC7783}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7CB419D4-A273-4613-A635-4997A1589322}
+	EndGlobalSection
+EndGlobal

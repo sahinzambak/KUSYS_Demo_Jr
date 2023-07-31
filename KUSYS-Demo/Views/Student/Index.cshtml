@@ -1,0 +1,267 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KUSYS Demo</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        </nav>
+    </header>
+    <div class="container">
+        <div class="row">
+            <div class=" form-control">
+                <h2>Add New Student</h2>
+                <label for="inpNewStName">Name</label>
+                <input id="inpNewStName" type="text" placeholder="Student Name" />
+                <label for="inpNewStLastName">LastName</label>
+                <input id="inpNewStLastName" type="text" placeholder="Student LastName" />
+                <label for="inpNewStBirthDate">Birth Date</label>
+                <input id="inpNewStBirthDate" type="datetime-local" placeholder="Student Birth Date " />
+                <label for="slcNewStCourse">Course</label>
+                <select id="slcNewStCourse"></select>
+                <button id="btnSaveNewSt" class="btn btn-primary">Create New Student</button>
+            </div>
+            <div id="studentTable" class="col-12 form-control"></div>
+        </div>
+    </div>
+
+    <div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="modalEdit" tabindex="-1" aria-labelledby="modalEditLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="modalEditLabel">Editing a student</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-3">
+                            <input id="inpEditStName" type="text" placeholder="Student Name" />
+                        </div>
+                        <div class="col-lg-3">
+                            <input id="inpEditStLastName" type="text" placeholder="Student LastName" />
+                        </div>
+                        <div class="col-lg-3">
+                            <input id="inpEditStBirthDate" type="datetime-local" placeholder="Student BirthDate " />
+                        </div>
+                        <div class="col-lg-3">
+                            <select id="slcEditCourse" style="width:150px"></select>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="btnEditSt" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/moment-with-locales.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+
+        //courseId string, studentId int olduğuyla alaklı Js içerisinde anlaşalım :)
+        var courseId = "";
+        var studentId = 0;
+
+        //tarih boş gelmesin
+        $("#inpNewStBirthDate").val(moment().format("YYYY-MM-DD HH:mm"))
+
+
+        getCourseList();
+        getStudentList();
+
+        //kurs listesini çağırıp slc itemine gömdüm
+        function getCourseList() {
+            $.getJSON("/Student/GetCourseList/", function (d) {
+                var row = "";
+                let w = JSON.parse(d)
+
+                $.each(w, function (i, v) {
+                    row += "<option value =" + v.CourseId + ">" + v.CourseName + "</option>";
+                });
+                $("#slcNewStCourse").html(row);
+                $("#slcEditCourse").html(row);
+                $('#slcNewStCourse option:first').prop('selected', true);
+                var firstValue = $('#slcNewStCourse option:first').val();
+                courseId = firstValue
+            });
+        }
+
+        //öğrenci listesini çağırıp slc itemine gömdüm
+        //async herhangi bir method kullanmadım, onun için ajax'ların asynclerini false yaptım
+        function getStudentList() {
+
+            $.ajax({
+                url: "/Student/GetStudentList/",
+                async:false,
+                success: x => {
+                    let w = jQuery.parseJSON(x)
+                    let tablehtml = "<table class = 'table table-hover'><thead><tr><th>Student Id</th><th>First Name</th><th>Last Name</th><th>Birth Date</th><th>Course Name <th>Details/Update</th> <th>Delete</th></tr><thead>";
+                    $.each(w, (i, v) => {
+
+                        tablehtml += "<tr><td>" + v.StudentId + "</td><td>" + v.FirstName + "</td><td>" + v.LastName + "</td><td>" + moment(v.BirthDate).format("DD/MM/YYYY") + "</td><td>" + v.Course.CourseName + "</td> <td><a class='btn btn-warning' id=" + v.StudentId + "  onclick=btnEdit(this.id) ><span style='color:#FFF'><i class='fa fa-edit'></i> Details/Update </span></button></td> <td><a class='btn btn-danger' id=" + v.StudentId + "  onclick=btnDelete(this.id) ><span style='color:#FFF'><i class='fa fa-trash'></i> Delete </span></button></td><tr>"
+
+                    });
+                    tablehtml += "</table>";
+                    tablehtml += ""
+
+                    $("#studentTable").html(tablehtml);
+                }
+            });
+        }
+
+        $("#btnSaveNewSt").click(x => {
+
+            let stData = {
+                FirstName: $('#inpNewStName').val(),
+                LastName: $('#inpNewStLastName').val(),
+                BirthDate: $('#inpNewStBirthDate').val(),
+                CourseId: $('#slcNewStCourse').val()
+            }
+
+            //yeni öğrenci kaydında yaş kontrolü yaptırdım, en aşağıda
+            if (ageCheck(stData.BirthDate))
+                return;
+
+
+            $.ajax({
+                url: '/Student/SaveNewStudent/',
+                async: false,
+                data: stData,
+                success: x => {
+                    if (x == 1) {
+
+                        alert("Creation was successful!")
+                        getStudentList()
+                    }
+                    else {
+                        alert("Creation failed, Name and Surname cannot be blank")
+                    }
+                }
+
+            })
+        })
+
+        $("#btnEditSt").click(x => {
+
+            if (studentId < 1)
+                return;
+
+            let stData = {
+                StudentId: studentId,
+                FirstName: $('#inpEditStName').val(),
+                LastName: $('#inpEditStLastName').val(),
+                BirthDate: $('#inpEditStBirthDate').val(),
+                CourseId: $('#slcEditCourse').val()
+            }
+
+            //güncellenecek öğrenci kaydında da yaş kontrolü yaptırdım, en aşağıda
+            if (ageCheck(stData.BirthDate))
+                return;
+
+
+            $.ajax({
+                url: '/Student/EditStudent/',
+                async: false,
+                data: stData,
+                success: x => {
+                    if (x == 1) {
+
+                        alert("Editing was successful!")
+                        getStudentList()
+                        $('#modalEdit').modal('hide');
+
+                    }
+                    else {
+                        alert("Editing failed")
+                    }
+                }
+
+            })
+        })
+
+        //silinecek öğrencinin Id'si controllera gidiyor
+        function btnDelete(id) {
+            $.ajax({
+                url: '/Student/DeleteStudent/',
+                async: false,
+                data: { 'id': id },
+                success: x => {
+                    if (x == 1) {
+
+                        alert("Removing was successful!")
+                        getStudentList()
+                    }
+                    else {
+                        alert("Removing failed")
+                    }
+                }
+            })
+        }
+
+        //burada modal yani pop-up olarak öğrenci bilgileri gelsin diye bir method yazdım
+        function btnEdit(id) {
+            $('#modalEdit').modal('show');
+
+            $.ajax({
+                url: '/Student/ShowStudent/',
+                data: { 'id': id },
+                async: false,
+                success: x => {
+                    if (x != 0) {
+                        let w = jQuery.parseJSON(x)
+
+                        let bd = moment(w.BirthDate).format('YYYY-MM-DD HH:mm')
+
+                        studentId = w.StudentId;
+                        $('#inpEditStName').val(w.FirstName)
+                        $('#inpEditStLastName').val(w.LastName)
+                        $('#inpEditStBirthDate').val(bd)
+                        $('#slcEditCourse').val(w.CourseId).change()
+
+                        let modalTitle = `Editing ${w.FirstName} ${w.LastName}`
+                        $('#modalEditLabel').html(modalTitle)
+                    }
+                    else {
+                        alert("The student didnt fetch from db")
+                        $('#modalEdit').modal('hide');
+                    }
+                }
+
+            })
+        }
+
+        //bir üniversitesi öğrencisi 15 yaşından az olamaz ve 100'den fazla olamaz gibi bir fonksiyon yazdım, validation  rules olsaydı gerek kalmazdı
+        function ageCheck(date) {
+            let legitMaxDate = parseInt(moment().format('YYYY')) - 100;
+            let legitMinDate = parseInt(moment().format('YYYY')) - 15;
+            let stBd = parseInt(moment(date).format('YYYY'))
+
+
+
+            if (legitMaxDate > stBd || legitMinDate < stBd) {
+                alert("No one can be a stundent at this age")
+                return true;
+            }
+            else {
+                return false
+            }
+        }
+
+
+
+    </script>
+
+</body>
+</html>
